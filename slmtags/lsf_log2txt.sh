@@ -14,10 +14,15 @@ log_location=/tmp/lsfusage.log
 ########################################################################################
 . ${LSF_ENVDIR}/profile.lsf
 
-tmp_str=`badmin showstatus | grep Cores | cut -f 2 -d ":"`
-numCores=`echo $tmp_str | cut -f 1 -d "/"`
-numMaxCores=`echo $tmp_str | cut -f 2 -d "/"`
+tmpStr=`badmin showstatus | grep Cores | cut -f 2 -d ":"`
+numCores=`echo $tmpStr | cut -f 1 -d "/"`
+numMaxCores=`echo $tmpStr | cut -f 2 -d "/"`
+numServers=`echo $tmpStr | cut -f1 -d"/"`
+numMaxServers=`echo $tmpStr | cut -f2 -d"/"`
+numUsers=`badmin showstatus | grep "of users" | cut -f2 -d":"`
+numActiveUsers=`badmin showstatus | grep "active users" | cut -f2 -d":"`
 the_date=`date -Imin`
 
-echo $the_date Cores $numCores MaxCores $numMaxCores >> $log_location
+echo Servers $numServers  MaxServers $numMaxServers  Users $numUsers  ActiveUsers $numActiveUsers Cores $numCores  MaxCores $numMaxCores Date $the_date >> $log_location
 
+echo Done
