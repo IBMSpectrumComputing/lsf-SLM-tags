@@ -18,25 +18,23 @@ function rollLogs {
 	fileext=$3
 	rollsize=$4
 	
-	################################################
-	#check to roll over the logs
-	################################################
+    # get the size of the existing file
 	if [ -f "$filepath/$filename".slmtag ]; then
 		fsize=`stat --format=%s "$filepath/$filename$fileext"`
 	else
 		fsize=0
 	fi
 	
-	numlogs=`ls -l $filepath | grep "$filename"_ | cut -d"_" -f2 | cut -d"." -f1 | sort -n -r | head -1`
-
 	if [ $fsize -gt $rollsize ]; then
-	  if [ $numlogs > 0 ]; then
-		for (( i=${numlogs}; i>0; i-- )) ; do
-		  mv "$filepath/$filename"_$i$fileext  "$filepath/$filename"_$(( i+1 ))$fileext
-		done
-	  fi
-	  
-	  mv "$filepath/$filename"$fileext "$filepath/$filename"_1$fileext
+        
+	    numlogs=`ls -l $filepath | grep "$filename"_ | cut -d"_" -f2 | cut -d"." -f1 | sort -n -r | head -1`
+        if [ $numlogs > 0 ]; then
+            for (( i=${numlogs}; i>0; i-- )) ; do
+            mv "$filepath/$filename"_$i$fileext  "$filepath/$filename"_$(( i+1 ))$fileext
+            done
+        fi
+        
+        mv "$filepath/$filename"$fileext "$filepath/$filename"_1$fileext
 	fi
 }
 
@@ -71,17 +69,27 @@ lsf_frequency=10
 # get the product name and tag pairs from the *.swidtag files in properties/version.
 #######################################################################################
 for f in $lsf_top/properties/version/*.swidtag; do 
-	# command to get product name from swidtag file
+	# get product name from swidtag file
 	productName=$(xmllint --xpath 'string(//*/@name)' $f $1)
 	
-	# command to get swidtag from swidtag file
+	# get swidtag from swidtag file
 	swidtag=$(xmllint --xpath 'string(//*//@persistentId)' $f $1)
 	
 	swlog_location="$lsf_top/properties/$swidtag"
 	swlog_path="$lsf_top/properties"
 	
-	rollLogs $swlog_path $swidtag ".slmtag" 999999
+	rollLogs $swlog_path $swidtag ".slmtag" 999999 
 	
+    # start a new log file if it doesn't exist
+    if [ ! -f "$swlog_location".slmtag ]; then
+        echo "<SchemaVersion>2.1.1</SchemaVersion>
+<Product>
+<ProductName>LSF Standard 10.1</ProductName>
+  <PersistentId>$swidtag</PersistentId>
+  <InstanceId>$lsf_top/properties/version</InstanceId>
+</Product>">> "$filepath/$filename"$fileext
+    fi
+
 	# get date of logging 
 	the_date=`date -Imin`
 	the_date_plus=`date -Imin -d "+$lsf_frequency minutes"`
@@ -95,13 +103,7 @@ for f in $lsf_top/properties/version/*.swidtag; do
 		numMaxCores=`echo $tmpStr | cut -f 2 -d "/"`
 		numServers=`echo $tmpStr | cut -f1 -d"/"`
 		numMaxServers=`echo $tmpStr | cut -f2 -d"/"`
-		echo "<SchemaVersion>2.1.1</SchemaVersion>
-<Product>
-<ProductName>LSF Standard 10.1</ProductName>
-  <PersistentId>$swidtag</PersistentId>
-  <InstanceId>$lsf_top/properties/version</InstanceId>
-</Product>
-<Metric logTime=\""$the_date"\">
+        echo "<Metric logTime=\""$the_date"\">
 <Type>RESOURCE_VALUE_UNIT</Type>
   <SubType>Current Cores</SubType>
   <Value>$numCores</Value>
@@ -141,13 +143,7 @@ for f in $lsf_top/properties/version/*.swidtag; do
 		# record # of Current Users & Active Users
 		numUsers=`badmin showstatus | grep "of users" | cut -f2 -d":" | sed 's/ //g'`
 		numActiveUsers=`badmin showstatus | grep "active users" | cut -f2 -d":" | sed 's/ //g'`
-		echo "<SchemaVersion>2.1.1</SchemaVersion>
-<Product>
-<ProductName>LSF Standard 10.1</ProductName>
-  <PersistentId>$swidtag</PersistentId>
-  <InstanceId>$lsf_top/properties/version</InstanceId>
-</Product>
-<Metric logTime=\""$the_date"\">
+		echo "<Metric logTime=\""$the_date"\">
 <Type>RESOURCE_VALUE_UNIT</Type>
   <SubType>Current Users</SubType>
   <Value>$numUsers</Value>
