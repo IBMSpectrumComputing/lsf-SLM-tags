@@ -25,16 +25,16 @@ function rollLogs {
 		fsize=0
 	fi
 	
-	numlogs=`ls -l $filepath | grep "$filename"_ | cut -d"_" -f2 | cut -d"." -f1 | sort -n -r | head -1`
-
 	if [ $fsize -gt $rollsize ]; then
-	  if [ $numlogs > 0 ]; then
-		for (( i=${numlogs}; i>0; i-- )) ; do
-		  mv "$filepath/$filename"_$i$fileext  "$filepath/$filename"_$(( i+1 ))$fileext
-		done
-	  fi
-	  
-	  mv "$filepath/$filename"$fileext "$filepath/$filename"_1$fileext
+        
+	    numlogs=`ls -l $filepath | grep "$filename"_ | cut -d"_" -f2 | cut -d"." -f1 | sort -n -r | head -1`
+        if [ $numlogs > 0 ]; then
+            for (( i=${numlogs}; i>0; i-- )) ; do
+                mv "$filepath/$filename"_$i$fileext  "$filepath/$filename"_$(( i+1 ))$fileext
+            done
+        fi
+        
+        mv "$filepath/$filename"$fileext "$filepath/$filename"_1$fileext
 	fi
 }
 
@@ -47,10 +47,10 @@ fi
 
 
 # set lsf_top to where the properties/version directories are found.
-if [ -d "$LSF_ENVDIR/../../properties" ]; then
-  lsf_top=$(cd "$LSF_ENVDIR/../.."; pwd)
+if [ -d "$LSF_ENVDIR/../../properties" ]; then 
+    lsf_top=$(cd "$LSF_ENVDIR/../.."; pwd)
 elif [ -d "$LSF_ENVDIR/../properties" ]; then
-  lsf_top=$(cd "$LSF_ENVDIR/.."; pwd)
+    lsf_top=$(cd "$LSF_ENVDIR/.."; pwd)
 fi
 
 # check we have the swidtag files
