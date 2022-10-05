@@ -25,16 +25,16 @@ function rollLogs {
 		fsize=0
 	fi
 	
+	numlogs=`ls -l $filepath | grep "$filename"_ | cut -d"_" -f2 | cut -d"." -f1 | sort -n -r | head -1`
+
 	if [ $fsize -gt $rollsize ]; then
-        
-	    numlogs=`ls -l $filepath | grep "$filename"_ | cut -d"_" -f2 | cut -d"." -f1 | sort -n -r | head -1`
-        if [ $numlogs > 0 ]; then
-            for (( i=${numlogs}; i>0; i-- )) ; do
-            mv "$filepath/$filename"_$i$fileext  "$filepath/$filename"_$(( i+1 ))$fileext
-            done
-        fi
-        
-        mv "$filepath/$filename"$fileext "$filepath/$filename"_1$fileext
+	  if [ $numlogs > 0 ]; then
+		for (( i=${numlogs}; i>0; i-- )) ; do
+		  mv "$filepath/$filename"_$i$fileext  "$filepath/$filename"_$(( i+1 ))$fileext
+		done
+	  fi
+	  
+	  mv "$filepath/$filename"$fileext "$filepath/$filename"_1$fileext
 	fi
 }
 
